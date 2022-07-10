@@ -9,10 +9,16 @@ static const char *TAG = "keypad_text_sensor";
 KeypadTextSensor::KeypadTextSensor() : progress_trigger_(new Trigger<std::string>()) {}
 
 void KeypadTextSensor::loop() {
+  if ((this->keycode_filled_ == true) && (millis() - this->last_key_time_ > this->timeout_)){
+    this->keycode_filled_ = false;
+    this->progress_trigger_->trigger(this->result_);
+    this->publish_state(this->result_);
+  }
   if ((this->timeout_ == 0) || (this->result_.size() == 0) || (millis() - this->last_key_time_ < this->timeout_))
     return;
   this->result_.clear();
   this->progress_trigger_->trigger(this->result_);
+  this->publish_state(this->result_);
 }
 
 void KeypadTextSensor::dump_config() {
@@ -41,6 +47,8 @@ void KeypadTextSensor::key_pressed(unsigned char key) {
     if (!this->result_.empty()) {
       this->result_.pop_back();
       this->progress_trigger_->trigger(this->result_);
+      this->publish_state(this->result_);
+      this->keycode_filled_ = false;
     }
     return;
   }
@@ -48,6 +56,8 @@ void KeypadTextSensor::key_pressed(unsigned char key) {
     if (!this->result_.empty()) {
       this->result_.clear();
       this->progress_trigger_->trigger(this->result_);
+      this->publish_state(this->result_);
+      this->keycode_filled_ = false;
     }
     return;
   }
@@ -66,8 +76,12 @@ void KeypadTextSensor::key_pressed(unsigned char key) {
   if ((this->max_length_ > 0) && (this->result_.size() == this->max_length_) && (!this->end_key_required_)) {
     this->publish_state(this->result_);
     this->result_.clear();
+    this->keycode_filled_ = true;
   }
   this->progress_trigger_->trigger(this->result_);
+  if (!this->result_.empty()) {
+    this->publish_state(this->result_);
+  }
 }
 
 Trigger<std::string> *KeypadTextSensor::get_progress_trigger() const { return this->progress_trigger_; };

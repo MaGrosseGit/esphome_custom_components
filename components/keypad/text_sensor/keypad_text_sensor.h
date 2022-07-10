@@ -19,6 +19,7 @@ class KeypadTextSensor : public KeypadListener, public text_sensor::TextSensor, 
   void set_back_keys(std::string back_keys) { this->back_keys_ = back_keys; };
   void set_clear_keys(std::string clear_keys) { this->clear_keys_ = clear_keys; };
   void set_allowed_keys(std::string allowed_keys) { this->allowed_keys_ = allowed_keys; };
+  void clear_all_keys() { this->result_.clear(); };
   Trigger<std::string> *get_progress_trigger() const;
   void set_timeout(int timeout) { this->timeout_ = timeout; };
 
@@ -29,6 +30,7 @@ class KeypadTextSensor : public KeypadListener, public text_sensor::TextSensor, 
   int max_length_{0};
   std::string end_keys_;
   bool end_key_required_{false};
+  bool keycode_filled_{false};
   std::string back_keys_;
   std::string clear_keys_;
   std::string allowed_keys_;
